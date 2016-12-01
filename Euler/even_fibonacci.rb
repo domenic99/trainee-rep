@@ -5,15 +5,15 @@ class EvenFibonacci
 
   def initialize
     @cache = [1, 2]
-    @summ = [0, 0]
+    @summ = [0, 2]
   end
 
   def sum
-    while @summ[1] <= 4_000_000
+    while fibonacci <= 4_000_000
       @summ[0] = @summ[1]
-      @summ[1] += fibonacci if fibonacci.even?
+      @summ[1] += @cache[1] if @cache[1].even?
     end
-    @summ[0]
+    @summ[1]
   end
 
   def fibonacci
