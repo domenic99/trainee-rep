@@ -1,16 +1,16 @@
 # Class for finding largest palindrome
 class LargestPalindrome
   def palindrome
-    check = ''
+    check = '0'
     999.downto(100) do |i|
-      999.downto(100) do |j|
+      100.upto(999) do |j|
         tmp = (i * j).to_s
-        if tmp == tmp.reverse && check.empty?
+        if tmp == tmp.reverse && tmp.to_i > check.to_i
           check = tmp
           break
         end
       end
     end
-    check.to_i
+    check
   end
 end
