@@ -1,21 +1,17 @@
 require 'prime'
 
-#Class for finding smallest multiple
-class SmallestMultiple
-  def prime(count = 20)
-    res = 1
-    Prime.each(count) do |prime|
-      res *= finder(prime, count) if prime < count
+# Class for frinfing largest prime factor
+class LargestPrimeFactor
+  def result
+    v = prime_numbers.reverse!.each do |item|
+      return item if (600_851_475_143 % item).zero?
     end
-    res
+    v
   end
 
-  def finder(number, count)
-    i = 1
-    loop do
-      break if number**i >= count
-      i += 1
-    end
-    number**(i - 1)
+  def prime_numbers
+    arr = []
+    Prime.each(100) { |prime| arr << prime }
+    arr
   end
 end
