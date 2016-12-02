@@ -2,7 +2,7 @@
 class LetterCounter
   def count_letters(string)
     out = Hash.new(0)
-    string.gsub!(/[a-zA-Z]/).each { |item| out[item] += 1 }
+    string.gsub!(/\p{L}/).each { |item| out[item] += 1 }
     out
   end
 end
