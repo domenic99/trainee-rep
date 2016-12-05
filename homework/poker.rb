@@ -18,19 +18,21 @@ class Poker
   }
 
   def play
-    puts start
+    puts start_game
   end
 
-  def start
+  # Start game.
+  def start_game
     deck = Deck.new
     @position = -1
     @result = 0
     @your_cards = deck.deal
     @flop_cards = deck.flop
     @all_cards = @your_cards + @flop_cards
-    check_for_royal
+    check_for_combination
   end
 
+  # Find combination by name. Return Iteration count and time.
   def finder(pos)
     tmp = @@combinations_list.key(pos.downcase)
     raise 'Wrong combination' if tmp.nil?
@@ -40,13 +42,24 @@ class Poker
     puts "Iteration count: #{@iteration} \nTime: " + t.real.to_s
   end
 
+  # Iterate until find needed combination.
   def iterator(tmp)
     until @position == tmp
       @iteration += 1
-      start
+      start_game
     end
   end
 
+  # Cehck all combinations.
+  def check_for_combination
+    check_for_royal
+    check_for_flush
+    check_for_pairs
+    "Your winning combination is #{@@combinations_list[@position]} with Cards:\n" +
+      ((@result.class == Card) ? @result.to_s : @result.each { |i| i.to_s }.join("\n"))
+  end
+
+  # Check for royal and street flash.
   def check_for_royal
     straight = check_for_straight
     flush = check_for_flush(straight) if straight
@@ -54,14 +67,10 @@ class Poker
       winner(9, straight)
     elsif straight && flush
       winner(8, straight)
-    else
-      check_for_flush
-      check_for_pairs
     end
-    "Your winning combination is #{@@combinations_list[@position]} with Cards:\n" +
-      ((@result.class == Card) ? @result.to_s : @result.each { |i| i.to_s }.join("\n"))
   end
 
+  # Check for flush.
   def check_for_flush(array_of_cards = @all_cards)
     out = Hash.new(0)
     array_of_cards.each { |item| out[item.suit] += 1 }
@@ -69,6 +78,7 @@ class Poker
     winner(5, array_of_cards.select { |i| i.suit == tmp[0] }) if tmp
   end
 
+  # Check for street.
   def check_for_straight
     arr = []
     @all_cards.each { |item| arr << item.rank.to_i }
@@ -88,6 +98,7 @@ class Poker
     winner(4, @all_cards.select { |i| (res.first..res.last).to_a.include?(i.rank.to_i) }) unless res.empty?
   end
 
+  # Check for pari or higher card.
   def check_for_pairs
     arr = @all_cards.map { |card| card.rank.to_i }
     if arr.uniq.size == 7
@@ -99,10 +110,12 @@ class Poker
     end
   end
 
+  # Check higher card.
   def high_card
     winner(0, @all_cards.sort_by { |i| i.rank.to_i }.last)
   end
 
+  # Check for pair.
   def which_pair(h)
     tmp = h.select { |k, v| v >= 2 }
            .sort_by { |k, v| [v, k] }.reverse.to_h
@@ -119,6 +132,7 @@ class Poker
     end
   end
 
+  # Set best combination.
   def winner(pos, array_of_cards)
     if @position < pos
       @position = pos
