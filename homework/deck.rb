@@ -10,6 +10,7 @@ class Deck
         @cards << Card.new(rank, suit)
       end
     end
+    shuffle
   end
 
   def flop

@@ -2,7 +2,7 @@ require 'benchmark'
 require './deck'
 
 class Poker
-  attr_reader :your_cards, :flop_cards, :comb, :result, :position
+  attr_reader :your_cards, :flop_cards, :all_cards, :result, :position
 
   @@combinations_list = {
     0 => 'high card',
@@ -23,27 +23,28 @@ class Poker
 
   def start
     deck = Deck.new
-    deck.shuffle
     @position = -1
     @result = 0
     @your_cards = deck.deal
     @flop_cards = deck.flop
-    @comb = @your_cards + @flop_cards
+    @all_cards = @your_cards + @flop_cards
     check_for_royal
   end
 
   def finder(pos)
     tmp = @@combinations_list.key(pos.downcase)
-    raise "Wrong combination" if tmp.nil?
-    iteration = 0
+    raise 'Wrong combination' if tmp.nil?
+    @iteration = 0
     @position = -1
-    t = Benchmark.measure do
-      until @position == tmp
-        iteration += 1
-        start
-      end
+    t = Benchmark.measure { iterator(tmp) }
+    puts "Iteration count: #{@iteration} \nTime: " + t.real.to_s
+  end
+
+  def iterator(tmp)
+    until @position == tmp
+      @iteration += 1
+      start
     end
-    puts "Iteration count: #{iteration} \nTime: " + t.real.to_s
   end
 
   def check_for_royal
@@ -57,16 +58,11 @@ class Poker
       check_for_flush
       check_for_pairs
     end
-    if @result.class == Card
-      "Your winning combination is #{@@combinations_list[@position]} with Cards:\n" +
-        @result.to_s
-    else
-      "Your winning combination is #{@@combinations_list[@position]} with Cards:\n" +
-        @result.each { |i| i.to_s }.join("\n")
-    end
+    "Your winning combination is #{@@combinations_list[@position]} with Cards:\n" +
+      ((@result.class == Card) ? @result.to_s : @result.each { |i| i.to_s }.join("\n"))
   end
 
-  def check_for_flush(array_of_cards = @comb)
+  def check_for_flush(array_of_cards = @all_cards)
     out = Hash.new(0)
     array_of_cards.each { |item| out[item.suit] += 1 }
     tmp ||= out.find { |k, v| v >= 5 }
@@ -75,7 +71,7 @@ class Poker
 
   def check_for_straight
     arr = []
-    @comb.each { |s| arr << s.rank.to_i }
+    @all_cards.each { |item| arr << item.rank.to_i }
     arr = arr.uniq.sort.reverse
     return nil if arr.size < 4
     res = []
@@ -89,11 +85,11 @@ class Poker
       res += arr[i..(i + 4)] if straight
     end
     res.sort!
-    winner(4, @comb.select { |i| (res.first..res.last).to_a.include?(i.rank.to_i) }) unless res.empty?
+    winner(4, @all_cards.select { |i| (res.first..res.last).to_a.include?(i.rank.to_i) }) unless res.empty?
   end
 
   def check_for_pairs
-    arr = @comb.map { |card| card.rank.to_i }
+    arr = @all_cards.map { |card| card.rank.to_i }
     if arr.uniq.size == 7
       high_card
     else
@@ -104,22 +100,22 @@ class Poker
   end
 
   def high_card
-    winner(0, @comb.sort_by { |i| i.rank.to_i }.last)
+    winner(0, @all_cards.sort_by { |i| i.rank.to_i }.last)
   end
 
   def which_pair(h)
     tmp = h.select { |k, v| v >= 2 }
            .sort_by { |k, v| [v, k] }.reverse.to_h
     if tmp.value?(4)
-      winner(7, @comb.select { |i| i.rank.to_i == tmp.keys[0] })
+      winner(7, @all_cards.select { |i| i.rank.to_i == tmp.keys[0] })
     elsif tmp.value?(3) && tmp.size >= 2
-      winner(6, @comb.select { |i| i.rank.to_i == tmp.keys[0] || i.rank.to_i == tmp.keys[1] })
+      winner(6, @all_cards.select { |i| i.rank.to_i == tmp.keys[0] || i.rank.to_i == tmp.keys[1] })
     elsif tmp.value?(3)
-      winner(3, @comb.select { |i| i.rank.to_i == tmp.keys[0] })
+      winner(3, @all_cards.select { |i| i.rank.to_i == tmp.keys[0] })
     elsif tmp.value?(2) && tmp.size >= 2
-      winner(2, @comb.select { |i| i.rank.to_i == tmp.keys[0] || i.rank.to_i == tmp.keys[1] })
+      winner(2, @all_cards.select { |i| i.rank.to_i == tmp.keys[0] || i.rank.to_i == tmp.keys[1] })
     else
-      winner(1, @comb.select { |i| i.rank.to_i == tmp.keys[0] })
+      winner(1, @all_cards.select { |i| i.rank.to_i == tmp.keys[0] })
     end
   end
 
