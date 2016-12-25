@@ -1,16 +1,14 @@
-# class for finding beauty of string
-class StringBeauty
-  def beauty_of_string(string = 'ABbCcc')
-    arr = (10...36).map { |i| i.to_s 36 }
-    #puts string.gsub(/[^A-Z]/,'').chars.to_a.uniq.size.to_i
-    #puts string
-    puts arr[0]
-    arr.rotate!(1)
-    res = 0
-    s = string.downcase
-    s.each_char { |c| res += arr.index(c) + 1 }
-    res
+# Class for string beauty calculation
+class String
+  def beauty
+    freq = Hash.new(0)
+    reverse.downcase.each_char { |s| freq[s] += 1 }
+    a = 26
+    result = 0
+    freq.each do |_key, value|
+      result += value * a
+      a -= 1
+    end
+    result
   end
 end
-
-
